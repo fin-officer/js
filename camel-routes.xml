@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns="http://camel.apache.org/schema/spring">
+    
+    <!-- Trasa do odbierania wiadomości email przez IMAP -->
+    <route id="email-receiver">
+        <from uri="imaps://{{email.host}}:{{email.port}}?username={{email.username}}&amp;password={{email.password}}&amp;delete=false&amp;unseen=true&amp;delay=60000"/>
+        <log message="Odebrano nową wiadomość email: ${header.subject}"/>
+        <to uri="direct:process-email"/>
+    </route>
+    
+    <!-- Trasa do przetwarzania wiadomości email -->
+    <route id="email-processor">
+        <from uri="direct:process-email"/>
+        <log message="Przetwarzanie wiadomości: ${header.subject}"/>
+        <!-- Wywołanie serwisu JavaScript do przetworzenia wiadomości -->
+        <to uri="javascript:resource:classpath:src/services/emailService.js?method=processEmail"/>
+        <choice>
+            <when>
+                <!-- Wywołanie serwisu JavaScript do sprawdzenia, czy wysłać automatyczną odpowiedź -->
+                <method ref="emailService" method="shouldAutoReply"/>
+                <to uri="direct:send-auto-reply"/>
+            </when>
+            <otherwise>
+                <log message="Brak automatycznej odpowiedzi dla wiadomości: ${header.subject}"/>
+            </otherwise>
+        </choice>
+    </route>
+    
+    <!-- Trasa do wysyłania automatycznych odpowiedzi -->
+    <route id="email-auto-responder">
+        <from uri="direct:send-auto-reply"/>
+        <log message="Przygotowanie automatycznej odpowiedzi dla: ${header.from}"/>
+        <!-- Wywołanie serwisu JavaScript do generowania odpowiedzi -->
+        <to uri="javascript:resource:classpath:src/services/emailService.js?method=generateReply"/>
+        <setHeader name="subject">
+            <simple>Re: ${header.subject}</simple>
+        </setHeader>
+        <setHeader name="to">
+            <simple>${header.from}</simple>
+        </setHeader>
+        <setHeader name="from">
+            <simple>{{email.username}}</simple>
+        </setHeader>
+        <to uri="smtp://{{email.host}}:{{email.port}}?username={{email.username}}&amp;password={{email.password}}&amp;mail.smtp.auth=false&amp;mail.smtp.starttls.enable=false"/>
+        <log message="Wysłano automatyczną odpowiedź do: ${header.to}"/>
+    </route>
+    
+    <!-- Trasa do analizy wiadomości przez LLM -->
+    <route id="llm-analysis">
+        <from uri="direct:analyze-with-llm"/>
+        <log message="Analizowanie wiadomości przez LLM..."/>
+        <!-- Wywołanie serwisu JavaScript do analizy treści przez LLM -->
+        <to uri="javascript:resource:classpath:src/services/llmService.js?method=analyzeTone"/>
+        <log message="Analiza LLM zakończona"/>
+    </route>
+    
+    <!-- Trasa REST API do ręcznego procesowania wiadomości email -->
+    <route id="rest-api">
+        <from uri="rest:post:/api/emails/process"/>
+        <log message="Otrzymano żądanie REST API do przetworzenia wiadomości"/>
+        <to uri="direct:process-email"/>
+        <marshal>
+            <json/>
+        </marshal>
+    </route>
+    
+    <!-- Trasa do monitorowania statusu aplikacji -->
+    <route id="health-check">
+        <from uri="rest:get:/health"/>
+        <setBody>
+            <constant>{"status":"UP","timestamp":"${date:now:yyyy-MM-dd'T'HH:mm:ss.SSSZ}"}</constant>
+        </setBody>
+        <marshal>
+            <json/>
+        </marshal>
+    </route>
+    
+    <!-- Trasa do cyklicznego sprawdzania konfiguracji -->
+    <route id="config-refresh">
+        <from uri="timer:config-refresh?period=60000"/>
+        <log message="Odświeżanie konfiguracji..."/>
+        <to uri="javascript:resource:classpath:src/utils/dbUtils.js?method=loadConfig"/>
+    </route>
+    
+</routes>

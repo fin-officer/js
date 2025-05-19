@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: email-llm-processor-js
+    env_file: .env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - mailhog
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    ports:
+      - "1025:1025"   # SMTP server
+      - "8025:8025"   # Web UI
+    networks:
+      - app-network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - app-network
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      - ADMINER_DEFAULT_SERVER=sqlite
+    networks:
+      - app-network
+
+  # Apache ActiveMQ - opcjonalnie, jeśli chcemy używać JMS z Apache Camel
+  activemq:
+    image: symptoma/activemq:latest
+    container_name: activemq
+    ports:
+      - "61616:61616"  # JMS
+      - "8161:8161"    # Web Console
+    networks:
+      - app-network
+    environment:
+      - ACTIVEMQ_ADMIN_LOGIN=admin
+      - ACTIVEMQ_ADMIN_PASSWORD=admin
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  ollama-data:

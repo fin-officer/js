@@ -2,9 +2,9 @@
 
 ## Przegląd
 
-Email LLM Processor to minimalistyczna aplikacja napisana w Kotlinie z użyciem Apache Camel, umożliwiająca automatyczne przetwarzanie, analizę i generowanie odpowiedzi na wiadomości e-mail przy użyciu modeli językowych (LLM).
+Email LLM Processor to minimalistyczna aplikacja napisana w JavaScript z użyciem Apache Camel, umożliwiająca automatyczne przetwarzanie, analizę i generowanie odpowiedzi na wiadomości e-mail przy użyciu modeli językowych (LLM).
 
-Aplikacja została zaprojektowana w podejściu skryptowym, bez wykorzystania frameworków takich jak Spring Boot, co minimalizuje ilość kodu i zależności, jednocześnie zachowując wszystkie niezbędne funkcjonalności.
+Aplikacja została zaprojektowana w podejściu skryptowym, z minimalnym wykorzystaniem frameworków, aby zminimalizować ilość kodu i zależności.
 
 ## Funkcjonalności
 
@@ -13,74 +13,23 @@ Aplikacja została zaprojektowana w podejściu skryptowym, bez wykorzystania fra
 - Analiza treści wiadomości przy użyciu modeli językowych (LLM)
 - Automatyczne generowanie odpowiedzi
 - Przechowywanie wiadomości w lokalnej bazie danych SQLite
+- REST API do ręcznego przetwarzania wiadomości
 
 ## Architektura
 
-### Struktura projektu
-
-Projekt jest zorganizowany w następujący sposób:
-
-```
-src/main/kotlin/com/emailprocessor/
-├── Main.kt                     # Główny punkt wejścia aplikacji
-├── model/                     # Modele danych
-│   ├── EmailMessage.kt        # Model wiadomości email
-│   └── ToneAnalysis.kt        # Model analizy tonu
-├── routes/                    # Trasy Apache Camel
-│   ├── EmailProcessingRoute.kt # Odbieranie i przetwarzanie emaili
-│   └── EmailSendingRoute.kt   # Wysyłanie automatycznych odpowiedzi
-├── services/                  # Serwisy biznesowe
-│   ├── EmailService.kt        # Logika przetwarzania emaili
-│   └── LlmService.kt          # Integracja z modelami językowymi
-└── util/                     # Narzędzia pomocnicze
-    └── EmailParser.kt         # Parser wiadomości email
-```
-
 ### Główne komponenty
 
-1. **Main.kt** - punkt wejścia aplikacji, odpowiedzialny za inicjalizację wszystkich komponentów i uruchomienie Apache Camel. Zawiera konfigurację aplikacji, ładowanie zmiennych środowiskowych i inicjalizację bazy danych.
-
-2. **EmailProcessingRoute.kt** - trasa Camel odpowiedzialna za odbieranie i przetwarzanie wiadomości e-mail. Implementuje następujący przepływ:
-   - Odbieranie wiadomości przez IMAP
-   - Parsowanie wiadomości do modelu EmailMessage
-   - Zapisywanie wiadomości w bazie danych SQLite
-   - Przetwarzanie wiadomości przez EmailService
-   - Decydowanie o wysłaniu automatycznej odpowiedzi
-
-3. **EmailSendingRoute.kt** - trasa Camel odpowiedzialna za wysyłanie automatycznych odpowiedzi. Formatuje odpowiedzi na podstawie analizy tonu i wysyła je przez SMTP.
-
-4. **EmailService.kt** - serwis zawierający logikę biznesową przetwarzania wiadomości. Odpowiada za:
-   - Przetwarzanie wiadomości email
-   - Decydowanie o automatycznej odpowiedzi na podstawie analizy tonu
-   - Generowanie treści odpowiedzi
-
-5. **LlmService.kt** - serwis do komunikacji z API modelu językowego. Odpowiada za:
-   - Tworzenie promptów dla modelu LLM
-   - Wysyłanie zapytań do API modelu (Ollama)
-   - Parsowanie odpowiedzi i tworzenie obiektów ToneAnalysis
-
-6. **EmailParser.kt** - narzędzie do parsowania wiadomości e-mail. Obsługuje różne formaty wiadomości (plain text, HTML, multipart) i ekstrahuje załączniki.
+1. **index.js** - punkt wejścia aplikacji, odpowiedzialny za inicjalizację wszystkich komponentów i uruchomienie Apache Camel
+2. **camel-routes.xml** - definicja tras Apache Camel odpowiedzialnych za odbieranie, przetwarzanie i wysyłanie wiadomości e-mail
+3. **emailService.js** - serwis zawierający logikę biznesową przetwarzania wiadomości
+4. **llmService.js** - serwis do komunikacji z API modelu językowego
+5. **emailParser.js** - narzędzie do parsowania wiadomości e-mail
+6. **dbUtils.js** - narzędzia do obsługi bazy danych
 
 ### Model danych
 
-1. **EmailMessage.kt** - model reprezentujący wiadomość e-mail z następującymi polami:
-   - id: identyfikator wiadomości
-   - from: adres nadawcy
-   - to: adres odbiorcy
-   - subject: temat wiadomości
-   - content: treść wiadomości
-   - receivedDate: data otrzymania
-   - processedDate: data przetworzenia
-   - toneAnalysis: wynik analizy tonu
-   - status: status przetwarzania (RECEIVED, PROCESSING, PROCESSED, REPLIED, ERROR)
-
-2. **ToneAnalysis.kt** - model reprezentujący analizę tonu wiadomości z następującymi polami:
-   - sentiment: ogólny sentyment (VERY_NEGATIVE, NEGATIVE, NEUTRAL, POSITIVE, VERY_POSITIVE)
-   - emotions: mapa emocji z wartościami intensywności (ANGER, FEAR, HAPPINESS, SADNESS, SURPRISE, DISGUST, NEUTRAL)
-   - urgency: pilność (LOW, NORMAL, HIGH, CRITICAL)
-   - formality: formalność (VERY_INFORMAL, INFORMAL, NEUTRAL, FORMAL, VERY_FORMAL)
-   - topTopics: lista głównych tematów
-   - summaryText: krótkie podsumowanie treści
+1. **emailMessage.js** - model reprezentujący wiadomość e-mail
+2. **toneAnalysis.js** - model reprezentujący analizę tonu wiadomości
 
 ### Baza danych
 
@@ -88,30 +37,64 @@ Aplikacja wykorzystuje prostą bazę danych SQLite do przechowywania wiadomości
 
 ## Wymagania
 
-- Java 17 lub nowsza
-- Gradle 8.0 lub nowszy
+- Node.js 18 lub nowszy
 - Docker i Docker Compose (do uruchomienia w kontenerach)
+- Opcjonalnie: Java 11 lub nowsze (dla pełnej funkcjonalności Apache Camel)
+
+## Instalacja
+
+Aplikacja może być zainstalowana i uruchomiona na dwa sposoby:
+
+### Instalacja za pomocą skryptów
+
+1. Dla systemów Linux/MacOS:
+   ```bash
+   ./scripts/install.sh
+   ```
+
+2. Dla systemów Windows:
+   ```cmd
+   scripts\install.bat
+   ```
+
+Skrypty automatycznie zainstalują wszystkie wymagane zależności, w tym Docker, jeśli nie jest zainstalowany.
+
+### Instalacja ręczna
+
+1. Zainstaluj Node.js 18+
+2. Zainstaluj Docker i Docker Compose
+3. Sklonuj repozytorium
+   ```bash
+   git clone https://github.com/yourusername/email-llm-processor-js.git
+   cd email-llm-processor-js
+   ```
+4. Zainstaluj zależności:
+   ```bash
+   npm install
+   ```
+5. Skopiuj plik przykładowy .env.example do .env:
+   ```bash
+   cp .env.example .env
+   ```
+6. Dostosuj zmienne w pliku .env według potrzeb.
 
 ## Uruchomienie
 
-### Przygotowanie środowiska
+### Uruchomienie za pomocą skryptów
 
-1. Sklonuj repozytorium:
-   ```
-   git clone https://github.com/yourusername/email-llm-processor.git
-   cd email-llm-processor
-   ```
-
-2. Skopiuj plik przykładowy .env.example do .env:
-   ```
-   cp .env.example .env
+1. Dla systemów Linux/MacOS:
+   ```bash
+   ./scripts/start.sh
    ```
 
-3. Dostosuj zmienne w pliku .env według potrzeb.
+2. Dla systemów Windows:
+   ```cmd
+   scripts\start.bat
+   ```
 
-### Uruchomienie z Docker Compose
+### Uruchomienie manualne
 
-```
+```bash
 docker-compose up -d
 ```
 
@@ -120,27 +103,25 @@ To polecenie uruchomi:
 - Serwer testowy MailHog do odbioru/wysyłania wiadomości
 - Serwer Ollama do hostowania modelu LLM
 - Adminer do zarządzania bazą danych SQLite
+- Apache ActiveMQ (opcjonalnie, dla wykorzystania JMS)
 
 ### Uruchomienie lokalne bez Dockera
 
-1. Zbuduj projekt:
-   ```
-   ./gradlew build
-   ```
-
-2. Uruchom aplikację:
-   ```
-   ./gradlew run
-   ```
+```bash
+npm start
+```
 
 ## Dostęp do usług
 
-Po uruchomieniu docker-compose, następujące usługi będą dostępne:
+Po uruchomieniu, następujące usługi będą dostępne:
 
 | Usługa | URL | Opis |
 |--------|-----|------|
+| Aplikacja | http://localhost:8080 | REST API aplikacji |
 | MailHog | http://localhost:8025 | Interfejs testowy do przeglądania wiadomości |
 | Adminer | http://localhost:8081 | Panel zarządzania bazą danych |
+| Hawtio | http://localhost:8090/hawtio | Panel administracyjny Apache Camel (opcjonalnie) |
+| ActiveMQ | http://localhost:8161 | Panel administracyjny ActiveMQ (opcjonalnie) |
 
 ## Testowanie
 
@@ -152,122 +133,111 @@ Aby przetestować aplikację:
 4. Sprawdź w MailHog czy otrzymałeś odpowiedź
 5. Możesz również sprawdzić bazę danych przez Adminer, aby zobaczyć zapisane wiadomości i wyniki analizy
 
+Alternatywnie, możesz przetestować API bezpośrednio:
+
+```bash
+curl -X POST http://localhost:8080/api/emails/process \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "testuser@example.com",
+    "to": "service@example.com",
+    "subject": "Test wiadomości",
+    "content": "To jest testowa wiadomość do przetworzenia przez system."
+  }'
+```
+
+## Struktura kodu
+
+### src/index.js
+Główny punkt wejścia aplikacji, inicjalizuje kontekst Apache Camel, serwisy i serwer Express dla REST API.
+
+### src/models
+Zawiera modele danych używane w aplikacji:
+- **emailMessage.js** - reprezentacja wiadomości email
+- **toneAnalysis.js** - reprezentacja wyników analizy tonu wiadomości
+
+### src/services
+Zawiera serwisy biznesowe aplikacji:
+- **emailService.js** - logika przetwarzania wiadomości email
+- **llmService.js** - komunikacja z API modelu językowego
+
+### src/utils
+Zawiera narzędzia pomocnicze:
+- **emailParser.js** - narzędzia do parsowania wiadomości email
+- **dbUtils.js** - narzędzia do komunikacji z bazą danych
+- **camelContext.js** - konfiguracja kontekstu Apache Camel
+
+### camel-routes.xml
+Definicja tras Apache Camel w formacie XML.
+
+### scripts
+Skrypty instalacyjne i uruchomieniowe:
+- **install.sh/.bat** - skrypty instalacyjne
+- **start.sh/.bat** - skrypty uruchomieniowe
+- **setup-db.js** - skrypt inicjalizujący bazę danych
+
 ## Rozszerzanie funkcjonalności
 
 ### Dodawanie nowych tras Camel
 
-Aby dodać nową trasę Camel:
-1. Utwórz nową klasę implementującą RouteBuilder w katalogu `src/main/kotlin/com/emailprocessor/routes/`
-2. Zaimplementuj metodę `configure()`
-3. Zarejestruj trasę w `Main.kt` dodając ją do `camelMain.configure().addRoutesBuilder()`
+Aby dodać nową trasę Camel, możesz:
+
+1. Edytować plik `camel-routes.xml` i dodać nową definicję trasy
+2. Zrestartować aplikację
 
 ### Dostosowanie analizy LLM
 
 Aby dostosować analizę LLM:
-1. Zmodyfikuj prompt w metodzie `createAnalysisPrompt()` w klasie `LlmService.kt`
+
+1. Zmodyfikuj prompt w metodzie `createAnalysisPrompt()` w pliku `src/services/llmService.js`
 2. Dostosuj parsowanie odpowiedzi w metodzie `parseAnalysisResponse()`
-3. Rozszerz model `ToneAnalysis.kt` o dodatkowe pola, jeśli są potrzebne
+3. Rozszerz model `ToneAnalysis` w pliku `src/models/toneAnalysis.js` o dodatkowe pola, jeśli są potrzebne
 
-## Ograniczenia
+## Zmienne środowiskowe
 
-Ta minimalistyczna wersja ma pewne ograniczenia:
-- Brak interfejsu użytkownika/API REST
-- Brak zaawansowanego zarządzania błędami
-- Uproszczona obsługa załączników
-- Brak systemu uwierzytelniania i autoryzacji
-- Zaślepki w komunikacji z LLM (w pełnej implementacji należałoby zintegrować się z rzeczywistym API)
+Aplikacja wykorzystuje następujące zmienne środowiskowe, które można ustawić w pliku `.env`:
 
-## Przepływ przetwarzania wiadomości
+| Zmienna | Opis | Wartość domyślna |
+|---------|------|------------------|
+| EMAIL_HOST | Host serwera email | mailhog |
+| EMAIL_PORT | Port serwera email | 1025 |
+| EMAIL_USER | Nazwa użytkownika email | test@example.com |
+| EMAIL_PASSWORD | Hasło email | password |
+| LLM_API_URL | URL API modelu językowego | http://ollama:11434 |
+| LLM_MODEL | Nazwa modelu językowego | llama2 |
+| APP_PORT | Port aplikacji | 8080 |
+| DATABASE_PATH | Ścieżka do bazy danych | /app/data/emails.db |
+| ACTIVEMQ_HOST | Host ActiveMQ | activemq |
+| ACTIVEMQ_PORT | Port ActiveMQ | 61616 |
+| ENABLE_HAWTIO | Włączenie panelu Hawtio | true |
+| NODE_ENV | Środowisko Node.js | production |
 
-### Diagram przepływu
+## Rozwiązywanie problemów
 
-```
-+---------------+    +-------------------+    +-------------------+
-|               |    |                   |    |                   |
-| Serwer Email  |--->| EmailProcessing   |--->| LLM Service       |
-| (IMAP)        |    | Route            |    | (Analiza tonu)    |
-|               |    |                   |    |                   |
-+---------------+    +-------------------+    +-------------------+
-                                |                       |
-                                v                       |
-                     +-------------------+              |
-                     |                   |              |
-                     | Baza danych       |<-------------+
-                     | SQLite            |
-                     |                   |
-                     +-------------------+
-                                |
-                                v
-                     +-------------------+    +-------------------+
-                     |                   |    |                   |
-                     | Email Service     |--->| EmailSending      |
-                     | (Decyzja o        |    | Route             |
-                     |  odpowiedzi)      |    | (SMTP)            |
-                     +-------------------+    +-------------------+
-                                                       |
-                                                       v
-                                               +---------------+
-                                               |               |
-                                               | Serwer Email  |
-                                               | (Odbiorca)    |
-                                               |               |
-                                               +---------------+
-```
+### Problem: Aplikacja nie uruchamia się
 
-### Szczegółowy opis przepływu
+Sprawdź:
+- Czy Docker jest uruchomiony
+- Czy porty 8080, 8025, 8081 są wolne
+- Logi aplikacji: `docker-compose logs app`
 
-1. **Odbieranie wiadomości**:
-   - Komponent IMAP Apache Camel regularnie sprawdza skrzynkę pocztową
-   - Nowe wiadomości są pobierane i przekazywane do trasy przetwarzania
+### Problem: Wiadomości nie są odbierane
 
-2. **Parsowanie wiadomości**:
-   - `EmailParser` ekstrahuje nadawcę, odbiorcę, temat i treść wiadomości
-   - Wiadomość jest konwertowana do modelu `EmailMessage`
+Sprawdź:
+- Czy serwer IMAP jest dostępny i poprawnie skonfigurowany
+- Czy dane logowania do serwera email są poprawne
+- Logi aplikacji pod kątem błędów połączenia
 
-3. **Zapisywanie w bazie danych**:
-   - Wiadomość jest zapisywana w tabeli `emails` w bazie SQLite
-   - Status wiadomości jest ustawiany na `RECEIVED`
+### Problem: Brak analizy LLM
 
-4. **Analiza tonu**:
-   - `LlmService` wysyła treść wiadomości do API modelu językowego (Ollama)
-   - Model analizuje sentyment, emocje, pilność i formalność wiadomości
-   - Wyniki są parsowane do modelu `ToneAnalysis`
+Sprawdź:
+- Czy serwer Ollama jest uruchomiony
+- Czy model LLM jest dostępny
+- Logi aplikacji pod kątem błędów komunikacji z API LLM
 
-5. **Decyzja o odpowiedzi**:
-   - `EmailService` na podstawie analizy tonu decyduje, czy wysłać automatyczną odpowiedź
-   - Wiadomości pilne lub o negatywnym sentymencie otrzymują automatyczną odpowiedź
+## Wsparcie
 
-6. **Generowanie odpowiedzi**:
-   - Jeśli zdecydowano o odpowiedzi, `EmailService` generuje odpowiednią treść
-   - Treść jest dostosowana do tonu oryginalnej wiadomości
-
-7. **Wysyłanie odpowiedzi**:
-   - `EmailSendingRoute` formatuje wiadomość odpowiedzi
-   - Odpowiedź jest wysyłana przez SMTP do oryginalnego nadawcy
-   - Status wiadomości jest aktualizowany na `REPLIED`
-
-## Informacje dodatkowe
-
-### Dlaczego Apache Camel?
-
-Apache Camel został wybrany jako główny komponent integracyjny ze względu na:
-- Prostotę w definiowaniu tras przetwarzania
-- Gotowe komponenty do obsługi poczty (IMAP, SMTP)
-- Elastyczność w konfiguracji
-- Niski narzut w porównaniu do pełnych frameworków
-
-### Dlaczego SQLite?
-
-SQLite zostało wybrane jako baza danych ze względu na:
-- Brak potrzeby instalacji osobnego serwera
-- Przechowywanie danych w jednym pliku
-- Prostota konfiguracji i użycia
-- Wystarczająca wydajność dla małych i średnich obciążeń
-
-### Dlaczego Ollama?
-
-Ollama zostało wybrane jako serwer modeli językowych ze względu na:
-- Możliwość uruchomienia lokalnie bez potrzeby dostępu do internetu
-- Wsparcie dla różnych modeli językowych (np. Llama2)
-- Proste API REST
-- Niskie wymagania sprzętowe w porównaniu do innych rozwiązań
+W przypadku problemów lub pytań:
+1. Sprawdź logi aplikacji: `docker-compose logs app`
+2. Sprawdź dokumentację Apache Camel: https://camel.apache.org/
+3. Zgłoś problem w repozytorium projektu
