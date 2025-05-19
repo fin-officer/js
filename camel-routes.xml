@@ -82,4 +82,48 @@
         <to uri="javascript:resource:classpath:src/utils/dbUtils.js?method=loadConfig"/>
     </route>
     
+    <!-- Trasa do archiwizacji wiadomości email -->
+    <route id="email-archiver">
+        <from uri="direct:archive-email"/>
+        <log message="Archiwizacja wiadomości od: ${header.from}"/>
+        <to uri="javascript:resource:classpath:src/services/emailService.js?method=archiveEmail"/>
+        <log message="Wiadomość zarchiwizowana"/>
+    </route>
+
+    <!-- Trasa do generowania zaawansowanych odpowiedzi -->
+    <route id="advanced-reply-generator">
+        <from uri="direct:generate-advanced-reply"/>
+        <log message="Generowanie zaawansowanej odpowiedzi dla: ${header.from}"/>
+        <to uri="javascript:resource:classpath:src/services/advancedReplyService.js?method=generateReply"/>
+        <log message="Wygenerowano zaawansowaną odpowiedź"/>
+    </route>
+
+    <!-- Trasa do ładowania historii email -->
+    <route id="email-history-loader">
+        <from uri="direct:load-email-history"/>
+        <log message="Ładowanie historii komunikacji dla: ${header.email}"/>
+        <to uri="javascript:resource:classpath:src/services/advancedReplyService.js?method=getEmailHistory"/>
+        <log message="Historia komunikacji załadowana"/>
+    </route>
+
+    <!-- Trasa REST API do zarządzania szablonami -->
+    <route id="template-management">
+        <from uri="rest:get:/api/templates"/>
+        <log message="Pobieranie listy szablonów"/>
+        <to uri="bean:advancedReplyService?method=getTemplateList"/>
+        <marshal>
+            <json/>
+        </marshal>
+    </route>
+
+    <!-- Trasa REST API do pobierania pojedynczego szablonu -->
+    <route id="template-retrieval">
+        <from uri="rest:get:/api/templates/{key}"/>
+        <log message="Pobieranie szablonu: ${header.key}"/>
+        <to uri="bean:advancedReplyService?method=getTemplate(${header.key})"/>
+        <marshal>
+            <json/>
+        </marshal>
+    </route>
+
 </routes>
