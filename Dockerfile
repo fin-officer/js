@@ -7,8 +7,11 @@ RUN apk add --no-cache openjdk11-jre maven curl
 
 # Instalacja Apache Camel
 RUN mkdir -p /opt/apache-camel && \
-    curl -L https://downloads.apache.org/camel/camel-4.0.0/apache-camel-4.0.0.tar.gz | \
-    tar -xz -C /opt/apache-camel --strip-components=1
+    curl -L https://downloads.apache.org/camel/apache-camel/4.11.0/apache-camel-4.11.0-src.zip -o /tmp/camel.zip && \
+    apk add --no-cache unzip && \
+    unzip /tmp/camel.zip -d /tmp && \
+    mv /tmp/apache-camel-4.11.0/* /opt/apache-camel/ && \
+    rm -rf /tmp/camel.zip /tmp/apache-camel-4.11.0
 
 # Ustawienie zmiennych środowiskowych dla Apache Camel
 ENV CAMEL_HOME=/opt/apache-camel
